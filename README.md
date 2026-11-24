@@ -22,6 +22,8 @@ npm run dev
 
 Open http://localhost:3000.
 
+To test as different people without waiting for emails, set `DEV_ACCOUNT_SWITCHER=on` in `.env.local` (it also needs `SUPABASE_SECRET_KEY`). Then the home and sign-in pages link to `/dev/switch`, which signs you in as any member with one click. It works only under `npm run dev`; production builds, including Vercel's, turn it off.
+
 ## Supabase settings
 
 Set these in the Supabase dashboard:
@@ -50,6 +52,7 @@ How access works: a sign-in account alone grants nothing. A person needs an acti
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (safe in the browser; data is protected by row-level security) |
 | `NEXT_PUBLIC_SITE_URL` | Fallback base URL for sign-in and invite links |
 | `SUPABASE_SECRET_KEY` | Supabase secret key, server only. In Vercel set it as type Secret; never prefix it with `NEXT_PUBLIC_` |
+| `DEV_ACCOUNT_SWITCHER` | Local only. `on` enables the account switcher at `/dev/switch` under `npm run dev`. Never set it in Vercel |
 | `RESEND_API_KEY` | Resend key for invite emails, server only, sending access to `mail.wolfpackindustries.club`. In Vercel set it as type Secret |
 
 Keep `.env.local` out of git. The Supabase secret (service-role) key never goes in this repo; set it only in Vercel's environment variables when a feature needs it.
@@ -70,6 +73,7 @@ Keep `.env.local` out of git. The Supabase secret (service-role) key never goes 
 - `src/lib/time.ts`: event times are entered and shown in Pacific time, whatever the server's clock
 - `src/app/invite/[token]/`: where an invite link lands; creates the account and signs the person in
 - `src/app/no-access/`: shown to someone signed in without an active membership
+- `src/app/dev/switch/`: local-only account switcher (see "Run it locally")
 - `src/app/login/`: sign-in page and the server action that emails the link
 - `src/app/auth/confirm/`: where the emailed sign-in link lands; signs in once the page opens, with a button as fallback
 - `src/app/auth/callback/`: older code-exchange landing route, kept as a fallback

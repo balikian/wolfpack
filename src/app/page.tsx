@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { requireMember } from "@/lib/members";
+import { devSwitcherEnabled } from "@/lib/dev";
 import { EventList } from "./events/event-list";
 import { loadUpcoming } from "./events/data";
 
@@ -53,6 +54,11 @@ async function Welcome() {
         <Link href="/members" className={navButton}>
           {me.role === "admin" ? "Members & invites" : "Members"}
         </Link>
+        {devSwitcherEnabled && (
+          <Link href="/dev/switch" className="inline-flex min-h-11 items-center rounded-md border border-blaze px-4 font-semibold">
+            Switch account (dev)
+          </Link>
+        )}
         <form action="/auth/signout" method="post">
           <button type="submit" className="min-h-11 rounded-md border border-line px-4">
             Sign out

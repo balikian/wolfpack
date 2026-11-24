@@ -10,8 +10,11 @@
   {{ .RedirectTo }} is the site the link was requested from plus /auth/confirm
   (set in src/app/login/actions.ts), so links requested on localhost open on
   localhost. It must match a Redirect URL in Supabase's URL Configuration.
+
+  {{ .Token }} is the same sign-in as a code, typed on the sign-in page.
 -->
 <h2>Sign in to the Wolfpack</h2>
 <p>Tap the link below to sign in.</p>
 <p><a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Sign in to the Wolfpack</a></p>
-<p>The link works once and expires in an hour. If you didn't ask to sign in, you can ignore this email.</p>
+<p>Or enter this code on the sign-in page: <strong style="font-size:1.4em;letter-spacing:0.15em">{{ .Token }}</strong></p>
+<p>The link and code work once and expire in an hour. If you didn't ask to sign in, you can ignore this email.</p>

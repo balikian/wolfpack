@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { devSwitcherEnabled } from "@/lib/dev";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -15,6 +17,11 @@ export default function LoginPage() {
       <p className="max-w-xs text-center text-sm opacity-80">
         No account? Ask a member for an invite.
       </p>
+      {devSwitcherEnabled && (
+        <Link href="/dev/switch" className="text-sm font-semibold underline">
+          Switch account (local testing)
+        </Link>
+      )}
     </main>
   );
 }

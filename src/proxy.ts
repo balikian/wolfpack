@@ -1,9 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { devSwitcherEnabled } from "@/lib/dev";
 
 // Paths a signed-out visitor may load. Everything else redirects to /login.
 // /invite/<token> pages check their own token before showing anything.
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/confirm", "/invite"];
+// /dev/switch is added only when the local account switcher is on.
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/callback",
+  "/auth/confirm",
+  "/invite",
+  ...(devSwitcherEnabled ? ["/dev/switch"] : []),
+];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
