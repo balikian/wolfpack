@@ -2,17 +2,48 @@
 
 A private, invite-only website for one group of friends (up to about 30 people) to plan hikes, parties and get-togethers, chat, and share photos and video. Secret spots such as fishing holes and mushroom patches stay visible only to the circles allowed to see them.
 
-Built with Next.js on Vercel, Supabase, Resend and Leaflet with OpenStreetMap tiles.
+Built with Next.js 16 on Vercel, Supabase, Resend and Leaflet with OpenStreetMap tiles.
 
 ## Status
 
-Planning. No site code yet. See [ROADMAP.md](ROADMAP.md) for the steps and open questions.
+Step 3 has started: sign-in with an emailed magic link works, and every page except `/login` requires a signed-in member. See [ROADMAP.md](ROADMAP.md) for what's next.
 
-## Getting started
+## Run it locally
+
+Needs Node 22 or newer.
 
 ```sh
 git clone https://github.com/balikian/wolfpack.git
 cd wolfpack
+npm install
+cp .env.example .env.local   # then fill in the Supabase URL and publishable key
+npm run dev
 ```
 
-Setup and run instructions will go here once the app is scaffolded.
+Open http://localhost:3000.
+
+## Supabase settings
+
+Set these in the Supabase dashboard:
+
+- **Authentication → Sign In / Providers:** turn off "Allow new users to sign up". People join only through invites.
+- **Authentication → URL Configuration:** set Site URL to `https://wolfpackindustries.club`, and add `http://localhost:3000/**` and `https://wolfpackindustries.club/**` to the redirect URLs.
+- **Authentication → Users:** add yourself with "Add user" so you can sign in before the invite flow exists.
+
+## Environment variables
+
+| Name | Where it's used |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (safe in the browser; data is protected by row-level security) |
+| `NEXT_PUBLIC_SITE_URL` | Fallback base URL for sign-in links |
+
+Keep `.env.local` out of git. The Supabase secret (service-role) key never goes in this repo; set it only in Vercel's environment variables when a feature needs it.
+
+## Layout
+
+- `src/proxy.ts`: refreshes the session on every request and sends signed-out visitors to `/login`
+- `src/lib/supabase/server.ts`: Supabase client for server code
+- `src/app/login/`: sign-in page and the server action that emails the link
+- `src/app/auth/callback/`: where the emailed link lands
+- `src/app/auth/signout/`: sign-out endpoint
