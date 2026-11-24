@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { EmojiPicker } from "@/components/emoji-picker";
 import type { FormResult } from "./actions";
 
 type Fields = { name: string; emoji: string | null; kind: "open" | "secret" };
@@ -38,17 +39,10 @@ export function CircleForm({
       className="flex flex-col gap-3"
     >
       <div className="flex gap-2">
-        <label className="flex w-20 flex-col gap-1 text-sm font-semibold">
+        <div className="flex w-20 flex-col gap-1 text-sm font-semibold">
           Emoji
-          <input
-            name="emoji"
-            defaultValue={initial?.emoji ?? ""}
-            maxLength={16}
-            autoComplete="off"
-            placeholder="🍄"
-            className={`${input} text-center`}
-          />
-        </label>
+          <EmojiPicker name="emoji" initial={initial?.emoji ?? null} />
+        </div>
         <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-semibold">
           Name
           <input
