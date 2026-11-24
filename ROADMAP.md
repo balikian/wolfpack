@@ -22,8 +22,8 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 - [ ] Map tiles: confirm free OSM tiles are enough, or pick a tile provider
 - [ ] Storage limits: settle the video cap (proposed 500 MB / 10 min per file) against Supabase storage costs
 - [x] Register a domain: wolfpackindustries.club
-- [ ] Verify wolfpackindustries.club in Resend for sending email
-- [ ] Point wolfpackindustries.club at Vercel
+- [x] Verify wolfpackindustries.club in Resend for sending email
+- [x] Point wolfpackindustries.club at Vercel
 
 ## Step 3: First working version
 
@@ -31,8 +31,8 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 - [ ] Email invite links automatically through Resend
 - [ ] Profile photo when joining (needs photo storage)
 - [x] App scaffold: Next.js 16, Supabase client, sign-in required on every page, noindex everywhere
-- [x] Magic-link sign-in (sends through Supabase's built-in email for now)
-- [ ] Send sign-in email through Resend SMTP
+- [x] Magic-link sign-in (email link opens a button page, so mail scanners can't use it up)
+- [x] Send sign-in email through Resend SMTP
 - [x] Members directory and admin tools (new link, cancel invite, deactivate, reactivate, make or remove admin)
 - [ ] Circles: open and secret, circle admins, instant loss of access on removal
 - [x] Access-core database: members, invites, circles, circle membership, audit log, and row-level security on every table using one shared audience rule (Everyone or one circle), with tests
