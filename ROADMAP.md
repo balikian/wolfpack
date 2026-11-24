@@ -21,7 +21,9 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 
 - [ ] Map tiles: confirm free OSM tiles are enough, or pick a tile provider
 - [ ] Storage limits: settle the video cap (proposed 500 MB / 10 min per file) against Supabase storage costs
-- [ ] Email domain: choose a domain and verify it in Resend
+- [x] Register a domain: wolfpackindustries.club
+- [ ] Verify wolfpackindustries.club in Resend for sending email
+- [ ] Point wolfpackindustries.club at Vercel
 
 ## Step 3: First working version
 
@@ -54,7 +56,7 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 
 1. Who besides Scott should be an admin? (Proposed: Scott plus one backup.)
 2. Can members invite others, or only admins? (Proposed: admins only; members can suggest people.)
-3. Which domain for the site and for sending email?
+3. ~~Which domain for the site and for sending email?~~ Answered: wolfpackindustries.club.
 4. Is 500 MB / 10 minutes per video OK?
 5. Should secret circles be completely invisible to people outside them? (Proposed: yes.)
 6. Is "Wolfpack" the site name? Logo concepts and a phone mockup exist; none has been picked.
