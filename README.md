@@ -28,7 +28,7 @@ Set these in the Supabase dashboard:
 
 - **Authentication → Sign In / Providers:** turn off "Allow new users to sign up". People join only through invites.
 - **Authentication → URL Configuration:** set Site URL to `https://www.wolfpackindustries.club`, and add `http://localhost:3000/**`, `https://wolfpackindustries.club/**` and `https://www.wolfpackindustries.club/**` to the redirect URLs.
-- **Authentication → Emails → Templates → Magic Link:** use the subject and body in `supabase/email-templates/magic-link.html`. The link goes to `/auth/confirm`, whose page signs in with a script once it opens in a browser, so scanners that only fetch the link can't use it up, and it works in any browser.
+- **Authentication → Emails → Templates → Magic Link:** use the subject and body in `supabase/email-templates/magic-link.html`. The link opens on whichever site it was requested from, so sign-in works on localhost too. The link goes to `/auth/confirm`, whose page signs in with a script once it opens in a browser, so scanners that only fetch the link can't use it up, and it works in any browser.
 - **Authentication → Emails → SMTP Settings:** custom SMTP through Resend (`smtp.resend.com`, port 465, username `resend`, password = a Resend API key with sending access to `mail.wolfpackindustries.club` only), sender `no-reply@mail.wolfpackindustries.club`.
 - **Authentication → Users:** add yourself with "Add user" so you can sign in before the invite flow exists.
 

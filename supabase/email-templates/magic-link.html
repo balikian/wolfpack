@@ -5,9 +5,13 @@
 
   The link goes to /auth/confirm, whose page signs in with a script once it
   opens in a browser (with a button as fallback). Scanners that only fetch
-  the link can't use it up, and it works in any browser. Requires Site URL = https://www.wolfpackindustries.club
+  the link can't use it up, and it works in any browser.
+
+  {{ .RedirectTo }} is the site the link was requested from plus /auth/confirm
+  (set in src/app/login/actions.ts), so links requested on localhost open on
+  localhost. It must match a Redirect URL in Supabase's URL Configuration.
 -->
 <h2>Sign in to the Wolfpack</h2>
 <p>Tap the link below to sign in.</p>
-<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Sign in to the Wolfpack</a></p>
+<p><a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Sign in to the Wolfpack</a></p>
 <p>The link works once and expires in an hour. If you didn't ask to sign in, you can ignore this email.</p>
