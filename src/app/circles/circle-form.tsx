@@ -93,7 +93,7 @@ export function CircleForm({
       {!editing && (
         <label className="flex items-center gap-2">
           <input type="checkbox" name="join" defaultChecked />
-          Add me to this circle
+          Add me to this circle as its manager
         </label>
       )}
 

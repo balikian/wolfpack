@@ -112,9 +112,11 @@ async function CircleContent({ params }: { params: Promise<{ id: string }> }) {
           <ul className="flex flex-col divide-y divide-line rounded-md border border-line bg-card">
             {inCircle.map((m) => {
               const isMe = m.id === me.id;
-              // Managers remove regular members; admins remove anyone. People
-              // remove themselves with "Leave circle" below.
-              const canRemove = !isMe && (isAdmin || (isManager && !m.isManager));
+              // Admins and managers remove anyone; people remove themselves
+              // with "Leave circle" below. The database keeps at least one
+              // active manager and explains if a change would remove the last.
+              const canRemove = !isMe && canAddRemove;
+              const canToggleManager = canAddRemove && m.status === "active";
               return (
                 <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
                   <div className="flex min-w-0 flex-col">
@@ -129,12 +131,21 @@ async function CircleContent({ params }: { params: Promise<{ id: string }> }) {
                       {m.status === "deactivated" && " · Deactivated"}
                     </span>
                   </div>
-                  {(isAdmin || canRemove) && (
+                  {(canToggleManager || canRemove) && (
                     <div className="flex flex-wrap items-start gap-2">
-                      {isAdmin && m.status === "active" && (
+                      {canToggleManager && (
                         <ActionButton
                           action={setCircleManager.bind(null, circle.id, m.id, !m.isManager)}
-                          label={m.isManager ? "Remove manager" : "Make manager"}
+                          label={
+                            m.isManager ? (isMe ? "Step down as manager" : "Remove manager") : "Make manager"
+                          }
+                          confirmText={
+                            m.isManager
+                              ? isMe
+                                ? `Stop managing ${circle.name}?`
+                                : `Remove ${m.display_name} as a manager of ${circle.name}?`
+                              : `Make ${m.display_name} a manager of ${circle.name}? Managers can add and remove people and choose other managers.`
+                          }
                         />
                       )}
                       {canRemove && (
@@ -154,7 +165,8 @@ async function CircleContent({ params }: { params: Promise<{ id: string }> }) {
           </ul>
         )}
         <p className="text-xs text-muted">
-          Managers can add and remove people. Admins choose the managers.
+          Managers (and admins) add and remove people and choose other managers.
+          Once a circle has a manager, it always keeps at least one.
         </p>
       </section>
 

@@ -8,9 +8,18 @@ import { circleWriteError, isUuid, parseCircleFields } from "@/lib/circles";
 
 // Every write here runs as the signed-in person, so row-level security
 // decides what's allowed: admins manage circles; admins and circle managers
-// add and remove people; only admins make managers; anyone can leave.
+// add and remove people and choose managers; anyone can leave. The database
+// refuses to remove a circle's last active manager (P0001 with a message
+// meant for people, shown as is).
 
 export type FormResult = { error: string | null };
+
+const LAST_MANAGER = "P0001";
+
+function membershipError(error: { code?: string; message?: string } | null, fallback: string) {
+  if (error?.code === LAST_MANAGER && error.message) return error.message;
+  return fallback;
+}
 
 export async function createCircle(
   _prev: FormResult,
@@ -31,7 +40,7 @@ export async function createCircle(
   if (formData.get("join") === "on") {
     const { error: joinError } = await supabase
       .from("circle_members")
-      .insert({ circle_id: circle.id, member_id: me.id, added_by: me.id });
+      .insert({ circle_id: circle.id, member_id: me.id, added_by: me.id, is_manager: true });
     if (joinError) console.error("createCircle: adding creator failed", joinError);
   }
 
@@ -116,7 +125,7 @@ export async function removeCircleMember(
     .eq("circle_id", circleId)
     .eq("member_id", memberId)
     .select("member_id");
-  if (error || !data?.length) return { error: "Couldn't remove them." };
+  if (error || !data?.length) return { error: membershipError(error, "Couldn't remove them.") };
 
   refresh();
   return { error: null };
@@ -127,7 +136,7 @@ export async function setCircleManager(
   memberId: string,
   isManager: boolean,
 ): Promise<FormResult> {
-  await requireAdmin();
+  await requireMember();
   if (!isUuid(circleId) || !isUuid(memberId)) return { error: "Couldn't change that." };
 
   const supabase = await createClient();
@@ -137,7 +146,7 @@ export async function setCircleManager(
     .eq("circle_id", circleId)
     .eq("member_id", memberId)
     .select("member_id");
-  if (error || !data?.length) return { error: "Couldn't change that." };
+  if (error || !data?.length) return { error: membershipError(error, "Couldn't change that.") };
 
   refresh();
   return { error: null };
@@ -154,7 +163,9 @@ export async function leaveCircle(circleId: string): Promise<FormResult> {
     .eq("circle_id", circleId)
     .eq("member_id", me.id)
     .select("member_id");
-  if (error || !data?.length) return { error: "Couldn't leave the circle." };
+  if (error || !data?.length) {
+    return { error: membershipError(error, "Couldn't leave the circle.") };
+  }
 
   redirect("/circles");
 }

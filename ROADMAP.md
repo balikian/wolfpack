@@ -35,6 +35,8 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 - [x] Send sign-in email through Resend SMTP
 - [x] Members directory and admin tools (new link, cancel invite, deactivate, reactivate, make or remove admin)
 - [x] Circles: open and secret, circle managers, instant loss of access on removal
+- [x] Circle managers choose other managers; a circle with managers always keeps at least one
+- [ ] Profile page: your name, role, the circles you're in and the ones you manage (editable name and phone; photo once storage exists)
 - [x] Access-core database: members, invites, circles, circle membership, audit log, and row-level security on every table using one shared audience rule (Everyone or one circle), with tests
 - [ ] Open circles: "ask to join" requests that an admin approves
 - [x] Events and hikes with RSVPs, map pin and optional meetup spot and time (any member can create one, for Everyone or a circle they're in)

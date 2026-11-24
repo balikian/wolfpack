@@ -189,17 +189,7 @@ begin
   insert into public.circle_members (circle_id, member_id)
     values ('00000000-0000-4000-8000-0000000000c2', '00000000-0000-4000-8000-00000000000c');
 
-  -- Manager makes someone else a manager: refused
-  begin
-    update public.circle_members set is_manager = true
-      where circle_id = '00000000-0000-4000-8000-0000000000c2'
-        and member_id = '00000000-0000-4000-8000-00000000000c';
-    get diagnostics n = row_count;
-    if n > 0 then
-      raise exception 'FAIL: manager B promoted C to manager';
-    end if;
-  exception when insufficient_privilege then null;
-  end;
+  -- (Managers choosing managers is checked in circle_managers_test.sql.)
 
   -- Non-manager adds C to the secret circle: refused
   begin
