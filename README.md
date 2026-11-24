@@ -62,7 +62,9 @@ Keep `.env.local` out of git. The Supabase secret (service-role) key never goes 
 - `src/lib/members.ts`: `requireMember()` and `requireAdmin()` for pages and actions
 - `src/lib/accounts.ts`: looks up an account and its membership by email (server only)
 - `src/lib/email.ts`: sends email through Resend
+- `src/lib/circles.ts`: circle types and form checks
 - `src/app/members/`: member directory, invites and admin tools
+- `src/app/circles/`: circles list, circle pages, and adding, removing and managing people
 - `src/app/invite/[token]/`: where an invite link lands; creates the account and signs the person in
 - `src/app/no-access/`: shown to someone signed in without an active membership
 - `src/app/login/`: sign-in page and the server action that emails the link

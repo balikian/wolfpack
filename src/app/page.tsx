@@ -27,6 +27,12 @@ async function Welcome() {
         >
           {me.role === "admin" ? "Members & invites" : "Members"}
         </Link>
+        <Link
+          href="/circles"
+          className="inline-flex min-h-11 items-center rounded-md bg-forest px-4 font-semibold text-on-forest"
+        >
+          Circles
+        </Link>
         <form action="/auth/signout" method="post">
           <button type="submit" className="min-h-11 rounded-md border border-line px-4">
             Sign out
