@@ -5,9 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 import { findAccountByEmail } from "@/lib/accounts";
 import { siteOrigin } from "@/lib/invites";
 
-export type LoginState =
-  | { status: "idle" | "invalid" }
-  | { status: "sent"; email: string };
+export type LoginState = { status: "idle" | "invalid" };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** The code page, which stays put through a refresh or a trip to the mail app. */
+function codePage(email: string): never {
+  redirect(`/login/code?email=${encodeURIComponent(email)}`);
+}
 
 export async function sendMagicLink(
   _prev: LoginState,
@@ -16,14 +21,14 @@ export async function sendMagicLink(
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!EMAIL_RE.test(email)) {
     return { status: "invalid" };
   }
 
   // Email a link only to active members. Unknown and deactivated addresses
-  // get the same "sent" screen, so it never reveals who is a member.
+  // get the same code page, so it never reveals who is a member.
   const { account } = await findAccountByEmail(email);
-  if (account?.memberStatus !== "active") return { status: "sent", email };
+  if (account?.memberStatus !== "active") codePage(email);
 
   const supabase = await createClient();
   // shouldCreateUser: false keeps the site invite-only even if the check
@@ -39,7 +44,7 @@ export async function sendMagicLink(
     },
   });
 
-  return { status: "sent", email };
+  codePage(email);
 }
 
 export type CodeState = { error: string | null };
@@ -49,11 +54,11 @@ export type CodeState = { error: string | null };
  * isn't handy (mail on another device, or the site saved to a phone's home
  * screen, which email links can't open).
  */
-export async function verifyCode(
-  email: string,
-  _prev: CodeState,
-  formData: FormData,
-): Promise<CodeState> {
+export async function verifyCode(_prev: CodeState, formData: FormData): Promise<CodeState> {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  if (!EMAIL_RE.test(email)) return { error: "Enter the email address the code was sent to." };
   const code = String(formData.get("code") ?? "").replace(/\s/g, "");
   if (!/^\d{6,10}$/.test(code)) return { error: "Enter the code from the email." };
 
