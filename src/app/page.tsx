@@ -1,6 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { requireMember } from "@/lib/members";
+import { EventList } from "./events/event-list";
+import { loadUpcoming } from "./events/data";
+
+const navButton =
+  "inline-flex min-h-11 items-center rounded-md bg-forest px-4 font-semibold text-on-forest";
 
 export default function HomePage() {
   return (
@@ -15,23 +21,37 @@ export default function HomePage() {
 
 async function Welcome() {
   const me = await requireMember();
+  await connection();
+  const now = new Date();
+  const upcoming = await loadUpcoming(me.id, now, 3);
 
   return (
-    <section className="flex flex-col gap-4">
+    <>
       <p className="text-xl">Hey {me.display_name}.</p>
-      <p className="text-muted">Events, spots and chat are coming next.</p>
+
+      <section className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted">Coming up</h2>
+          <Link href="/events/new" className="text-sm font-semibold underline">
+            New event
+          </Link>
+        </div>
+        {upcoming.length === 0 ? (
+          <p className="text-muted">Nothing planned yet.</p>
+        ) : (
+          <EventList events={upcoming} now={now} />
+        )}
+      </section>
+
       <nav className="flex flex-wrap gap-3">
-        <Link
-          href="/members"
-          className="inline-flex min-h-11 items-center rounded-md bg-forest px-4 font-semibold text-on-forest"
-        >
-          {me.role === "admin" ? "Members & invites" : "Members"}
+        <Link href="/events" className={navButton}>
+          Events
         </Link>
-        <Link
-          href="/circles"
-          className="inline-flex min-h-11 items-center rounded-md bg-forest px-4 font-semibold text-on-forest"
-        >
+        <Link href="/circles" className={navButton}>
           Circles
+        </Link>
+        <Link href="/members" className={navButton}>
+          {me.role === "admin" ? "Members & invites" : "Members"}
         </Link>
         <form action="/auth/signout" method="post">
           <button type="submit" className="min-h-11 rounded-md border border-line px-4">
@@ -39,6 +59,6 @@ async function Welcome() {
           </button>
         </form>
       </nav>
-    </section>
+    </>
   );
 }

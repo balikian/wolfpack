@@ -37,7 +37,7 @@ Set these in the Supabase dashboard:
 SQL lives in `supabase/`:
 
 - `migrations/`: schema changes, applied in filename order. Paste each new one into the Supabase SQL editor and run it once.
-- `tests/access_core_test.sql`: checks the access rules (who can see and change what). Safe to run on the live project at any time: it works inside one transaction and rolls everything back. A single row saying "All access tests passed" means every check passed; a failure stops with a message starting `FAIL:`.
+- `tests/`: checks the access rules (who can see and change what), one file per migration: `access_core_test.sql` and `events_test.sql`. Safe to run on the live project at any time: each works inside one transaction and rolls everything back. A single row saying "All … tests passed" means every check passed; a failure stops with a message starting `FAIL:`.
 - `bootstrap_admin.sql`: run once to make yourself the first admin. Fill in your name and email in the editor; don't commit them.
 
 How access works: a sign-in account alone grants nothing. A person needs an active row in `members`. Shared content is visible to Everyone (`circle_id` is null) or to one circle, checked by `public.can_see(circle_id)`. Secret circles are invisible to non-members, and admins can manage a secret circle's membership without seeing its content.
@@ -65,6 +65,9 @@ Keep `.env.local` out of git. The Supabase secret (service-role) key never goes 
 - `src/lib/circles.ts`: circle types and form checks
 - `src/app/members/`: member directory, invites and admin tools
 - `src/app/circles/`: circles list, circle pages, and adding, removing and managing people
+- `src/app/events/`: events and hikes: list, new, edit, event page with RSVPs and map
+- `src/components/map-picker.tsx`, `map-view.tsx`: Leaflet maps with OpenStreetMap tiles (tap to drop a pin; read-only view)
+- `src/lib/time.ts`: event times are entered and shown in Pacific time, whatever the server's clock
 - `src/app/invite/[token]/`: where an invite link lands; creates the account and signs the person in
 - `src/app/no-access/`: shown to someone signed in without an active membership
 - `src/app/login/`: sign-in page and the server action that emails the link

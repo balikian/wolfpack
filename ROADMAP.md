@@ -37,7 +37,7 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 - [x] Circles: open and secret, circle managers, instant loss of access on removal
 - [x] Access-core database: members, invites, circles, circle membership, audit log, and row-level security on every table using one shared audience rule (Everyone or one circle), with tests
 - [ ] Open circles: "ask to join" requests that an admin approves
-- [ ] Events and hikes with RSVPs, map pin and optional meetup spot and time
+- [x] Events and hikes with RSVPs, map pin and optional meetup spot and time (any member can create one, for Everyone or a circle they're in)
 - [ ] Spots: shared with a circle by default, exact coordinates sent only to people who can see them
 - [ ] Chat: Everyone room, one room per circle, one per event (Supabase Realtime)
 
