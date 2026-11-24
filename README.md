@@ -27,7 +27,9 @@ Open http://localhost:3000.
 Set these in the Supabase dashboard:
 
 - **Authentication → Sign In / Providers:** turn off "Allow new users to sign up". People join only through invites.
-- **Authentication → URL Configuration:** set Site URL to `https://wolfpackindustries.club`, and add `http://localhost:3000/**` and `https://wolfpackindustries.club/**` to the redirect URLs.
+- **Authentication → URL Configuration:** set Site URL to `https://www.wolfpackindustries.club`, and add `http://localhost:3000/**`, `https://wolfpackindustries.club/**` and `https://www.wolfpackindustries.club/**` to the redirect URLs.
+- **Authentication → Emails → Templates → Magic Link:** use the subject and body in `supabase/email-templates/magic-link.html`. The link goes to `/auth/confirm`, which signs in only when its button is pressed, so mail scanners can't use the link up and it works in any browser.
+- **Authentication → Emails → SMTP Settings:** custom SMTP through Resend (`smtp.resend.com`, port 465, username `resend`, password = a Resend API key with sending access to `mail.wolfpackindustries.club` only), sender `no-reply@mail.wolfpackindustries.club`.
 - **Authentication → Users:** add yourself with "Add user" so you can sign in before the invite flow exists.
 
 ## Database
@@ -61,5 +63,6 @@ Keep `.env.local` out of git. The Supabase secret (service-role) key never goes 
 - `src/app/invite/[token]/`: where an invite link lands; creates the account and signs the person in
 - `src/app/no-access/`: shown to someone signed in without an active membership
 - `src/app/login/`: sign-in page and the server action that emails the link
-- `src/app/auth/callback/`: where the emailed link lands
+- `src/app/auth/confirm/`: where the emailed sign-in link lands (button press signs in)
+- `src/app/auth/callback/`: older code-exchange landing route, kept as a fallback
 - `src/app/auth/signout/`: sign-out endpoint

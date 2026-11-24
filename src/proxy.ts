@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 // Paths a signed-out visitor may load. Everything else redirects to /login.
 // /invite/<token> pages check their own token before showing anything.
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/invite"];
+const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/confirm", "/invite"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

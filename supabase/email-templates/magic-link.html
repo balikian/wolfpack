@@ -1,0 +1,13 @@
+<!--
+  Supabase -> Authentication -> Emails -> Templates -> "Magic Link".
+  Subject: Your Wolfpack sign-in link
+  Paste the HTML below as the message body.
+
+  The link goes to /auth/confirm, which signs in only when the button there
+  is pressed. That keeps mail scanners from using up the link, and lets it
+  work in any browser. Requires Site URL = https://www.wolfpackindustries.club
+-->
+<h2>Sign in to Wolfpack</h2>
+<p>Tap the link below, then press "Sign in to Wolfpack" on the page that opens.</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Sign in to Wolfpack</a></p>
+<p>The link works once and expires in an hour. If you didn't ask to sign in, you can ignore this email.</p>
