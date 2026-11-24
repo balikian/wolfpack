@@ -10,8 +10,9 @@ export type ConfirmState = { error: string | null };
 const ALLOWED_TYPES: EmailOtpType[] = ["email", "magiclink"];
 
 /**
- * Signs in with the token from an emailed link. It runs only when the person
- * presses the button, so mail scanners that open links can't use it up.
+ * Signs in with the token from an emailed link. The confirm page submits
+ * this itself once it opens in a browser, so mail scanners that only fetch
+ * the link can't use it up.
  */
 export async function confirmSignIn(
   _prev: ConfirmState,
@@ -27,6 +28,11 @@ export async function confirmSignIn(
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
   if (error) {
+    if (error.code === "user_banned") {
+      return {
+        error: "This account no longer has access. Ask an admin if that's a mistake.",
+      };
+    }
     return {
       error: "This sign-in link has expired or was already used. Request a new one.",
     };

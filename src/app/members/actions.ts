@@ -4,12 +4,14 @@ import { refresh } from "next/cache";
 import { requireAdmin } from "@/lib/members";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { findAccountByEmail } from "@/lib/accounts";
+import { escapeHtml, sendEmail } from "@/lib/email";
 import { newInviteToken, normalizeEmail, siteOrigin } from "@/lib/invites";
 
 export type InviteState =
   | { status: "idle" }
   | { status: "error"; message: string }
-  | { status: "created"; email: string; link: string };
+  | { status: "created"; email: string; link: string; emailed: boolean };
 
 export type ActionResult = { error: string | null };
 
@@ -17,9 +19,9 @@ export type ActionResult = { error: string | null };
 const BAN_FOREVER = "876000h";
 
 /**
- * Creates an invite and returns its link. Inviting an email that already has
- * a pending invite cancels the old link, so this also serves as "resend".
- * The link is shown once; only its hash is stored.
+ * Creates an invite, emails it, and returns its link. Inviting an email that
+ * already has a pending invite cancels the old link, so this also serves as
+ * "resend". The link is shown once; only its hash is stored.
  */
 export async function createInvite(
   _prev: InviteState,
@@ -29,27 +31,12 @@ export async function createInvite(
   const email = normalizeEmail(formData.get("email"));
   if (!email) return { status: "error", message: "Enter a valid email address." };
 
-  // Already an active member? (There are only a few dozen accounts, so one
-  // page of users covers everyone.)
-  const admin = createAdminClient();
-  const { data: list, error: listError } = await admin.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  });
-  if (listError) {
-    console.error("createInvite: listUsers failed", listError);
+  const { account, error: lookupError } = await findAccountByEmail(email);
+  if (lookupError) {
     return { status: "error", message: "Couldn't create the invite. Try again." };
   }
-  const existing = list.users.find((u) => u.email?.toLowerCase() === email);
-  if (existing) {
-    const { data: row } = await admin
-      .from("members")
-      .select("status")
-      .eq("id", existing.id)
-      .maybeSingle();
-    if (row?.status === "active") {
-      return { status: "error", message: `${email} is already a member.` };
-    }
+  if (account?.memberStatus === "active") {
+    return { status: "error", message: `${email} is already a member.` };
   }
 
   // Everything below runs as the signed-in admin, so row-level security
@@ -74,11 +61,27 @@ export async function createInvite(
     return { status: "error", message: "Couldn't create the invite. Try again." };
   }
 
+  const link = `${await siteOrigin()}/invite/${token}`;
+  const emailed = await sendEmail(inviteEmail(email, me.display_name, link));
+
   refresh();
+  return { status: "created", email, link, emailed };
+}
+
+function inviteEmail(to: string, inviter: string, link: string) {
+  const name = escapeHtml(inviter);
   return {
-    status: "created",
-    email,
-    link: `${await siteOrigin()}/invite/${token}`,
+    to,
+    subject: `${inviter} invited you to Wolfpack`,
+    html: `<h2>You're invited to Wolfpack</h2>
+<p>${name} invited you to join Wolfpack, our private site for planning hikes, parties and get-togethers.</p>
+<p><a href="${link}">Join the pack</a></p>
+<p>The link works once and expires in 7 days.</p>`,
+    text: `${inviter} invited you to join Wolfpack, our private site for planning hikes, parties and get-togethers.
+
+Join here: ${link}
+
+The link works once and expires in 7 days.`,
   };
 }
 

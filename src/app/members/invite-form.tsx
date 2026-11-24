@@ -36,7 +36,7 @@ export function InviteForm({ fixedEmail }: { fixedEmail?: string }) {
               : "min-h-11 rounded-md bg-blaze px-4 font-semibold text-on-blaze disabled:opacity-60"
           }
         >
-          {pending ? "Creating…" : fixedEmail ? "New link" : "Create invite"}
+          {pending ? "Sending…" : fixedEmail ? "Resend invite" : "Send invite"}
         </button>
       </form>
 
@@ -45,20 +45,39 @@ export function InviteForm({ fixedEmail }: { fixedEmail?: string }) {
           {state.message}
         </p>
       )}
-      {state.status === "created" && <NewLink email={state.email} link={state.link} />}
+      {state.status === "created" && (
+        <NewLink email={state.email} link={state.link} emailed={state.emailed} />
+      )}
     </div>
   );
 }
 
-function NewLink({ email, link }: { email: string; link: string }) {
+function NewLink({
+  email,
+  link,
+  emailed,
+}: {
+  email: string;
+  link: string;
+  emailed: boolean;
+}) {
   const [copied, setCopied] = useState(false);
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-line bg-card p-3 text-sm" role="status">
-      <p>
-        Invite link for <strong>{email}</strong>. Send it to them yourself. It
-        works once and expires in 7 days. This is the only time it&apos;s shown.
-      </p>
+      {emailed ? (
+        <p>
+          Invite emailed to <strong>{email}</strong>. If it doesn&apos;t arrive,
+          send them this link yourself. It works once and expires in 7 days.
+          This is the only time it&apos;s shown.
+        </p>
+      ) : (
+        <p>
+          <strong>Couldn&apos;t email the invite.</strong> Send this link to{" "}
+          <strong>{email}</strong> yourself. It works once and expires in 7
+          days. This is the only time it&apos;s shown.
+        </p>
+      )}
       <div className="flex gap-2">
         <input
           readOnly

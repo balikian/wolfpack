@@ -28,7 +28,7 @@ Set these in the Supabase dashboard:
 
 - **Authentication → Sign In / Providers:** turn off "Allow new users to sign up". People join only through invites.
 - **Authentication → URL Configuration:** set Site URL to `https://www.wolfpackindustries.club`, and add `http://localhost:3000/**`, `https://wolfpackindustries.club/**` and `https://www.wolfpackindustries.club/**` to the redirect URLs.
-- **Authentication → Emails → Templates → Magic Link:** use the subject and body in `supabase/email-templates/magic-link.html`. The link goes to `/auth/confirm`, which signs in only when its button is pressed, so mail scanners can't use the link up and it works in any browser.
+- **Authentication → Emails → Templates → Magic Link:** use the subject and body in `supabase/email-templates/magic-link.html`. The link goes to `/auth/confirm`, whose page signs in with a script once it opens in a browser, so scanners that only fetch the link can't use it up, and it works in any browser.
 - **Authentication → Emails → SMTP Settings:** custom SMTP through Resend (`smtp.resend.com`, port 465, username `resend`, password = a Resend API key with sending access to `mail.wolfpackindustries.club` only), sender `no-reply@mail.wolfpackindustries.club`.
 - **Authentication → Users:** add yourself with "Add user" so you can sign in before the invite flow exists.
 
@@ -50,6 +50,7 @@ How access works: a sign-in account alone grants nothing. A person needs an acti
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (safe in the browser; data is protected by row-level security) |
 | `NEXT_PUBLIC_SITE_URL` | Fallback base URL for sign-in and invite links |
 | `SUPABASE_SECRET_KEY` | Supabase secret key, server only. In Vercel set it as type Secret; never prefix it with `NEXT_PUBLIC_` |
+| `RESEND_API_KEY` | Resend key for invite emails, server only, sending access to `mail.wolfpackindustries.club`. In Vercel set it as type Secret |
 
 Keep `.env.local` out of git. The Supabase secret (service-role) key never goes in this repo; set it only in Vercel's environment variables when a feature needs it.
 
@@ -59,10 +60,12 @@ Keep `.env.local` out of git. The Supabase secret (service-role) key never goes 
 - `src/lib/supabase/server.ts`: Supabase client for server code, acting as the signed-in person
 - `src/lib/supabase/admin.ts`: Supabase client with the secret key; skips row-level security, so it's used only for accepting invites and blocking sign-in
 - `src/lib/members.ts`: `requireMember()` and `requireAdmin()` for pages and actions
+- `src/lib/accounts.ts`: looks up an account and its membership by email (server only)
+- `src/lib/email.ts`: sends email through Resend
 - `src/app/members/`: member directory, invites and admin tools
 - `src/app/invite/[token]/`: where an invite link lands; creates the account and signs the person in
 - `src/app/no-access/`: shown to someone signed in without an active membership
 - `src/app/login/`: sign-in page and the server action that emails the link
-- `src/app/auth/confirm/`: where the emailed sign-in link lands (button press signs in)
+- `src/app/auth/confirm/`: where the emailed sign-in link lands; signs in once the page opens, with a button as fallback
 - `src/app/auth/callback/`: older code-exchange landing route, kept as a fallback
 - `src/app/auth/signout/`: sign-out endpoint
