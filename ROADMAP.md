@@ -27,11 +27,13 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 
 ## Step 3: First working version
 
-- [ ] Invite flow: admin enters email, single-use link expires in 7 days
+- [x] Invite flow: admin enters email, single-use link expires in 7 days (the admin copies and sends the link until Resend is set up)
+- [ ] Email invite links automatically through Resend
+- [ ] Profile photo when joining (needs photo storage)
 - [x] App scaffold: Next.js 16, Supabase client, sign-in required on every page, noindex everywhere
 - [x] Magic-link sign-in (sends through Supabase's built-in email for now)
 - [ ] Send sign-in email through Resend SMTP
-- [ ] Members directory and admin tools (resend, revoke, deactivate, promote)
+- [x] Members directory and admin tools (new link, cancel invite, deactivate, reactivate, make or remove admin)
 - [ ] Circles: open and secret, circle admins, instant loss of access on removal
 - [x] Access-core database: members, invites, circles, circle membership, audit log, and row-level security on every table using one shared audience rule (Everyone or one circle), with tests
 - [ ] Open circles: "ask to join" requests that an admin approves

@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
+/* Colors from the Wolfpack phone mockup: "Trailhead" in light mode,
+   "Campfire" in dark mode. Use them as bg-paper, text-ink, bg-blaze, etc. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --paper: #eef0e5;
+  --card: #fbfcf7;
+  --ink: #18221c;
+  --muted: #4f5c53;
+  --line: #cfd3c2;
+  --forest: #1e3a2b;
+  --on-forest: #f1f3ea;
+  --blaze: #d9541a;
+  --on-blaze: #ffffff;
+  --danger: #a3361f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #2e2823;
+    --card: #3d352d;
+    --ink: #fdf7ec;
+    --muted: #dccdb6;
+    --line: #615446;
+    --forest: #1c1714;
+    --on-forest: #fdf7ec;
+    --blaze: #ff8a3d;
+    --on-blaze: #1f0e03;
+    --danger: #ffa588;
   }
 }
 
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-forest: var(--forest);
+  --color-on-forest: var(--on-forest);
+  --color-blaze: var(--blaze);
+  --color-on-blaze: var(--on-blaze);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

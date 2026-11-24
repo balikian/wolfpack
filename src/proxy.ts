@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 // Paths a signed-out visitor may load. Everything else redirects to /login.
-const PUBLIC_PATHS = ["/login", "/auth/callback"];
+// /invite/<token> pages check their own token before showing anything.
+const PUBLIC_PATHS = ["/login", "/auth/callback", "/invite"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

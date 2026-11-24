@@ -46,14 +46,20 @@ How access works: a sign-in account alone grants nothing. A person needs an acti
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (safe in the browser; data is protected by row-level security) |
-| `NEXT_PUBLIC_SITE_URL` | Fallback base URL for sign-in links |
+| `NEXT_PUBLIC_SITE_URL` | Fallback base URL for sign-in and invite links |
+| `SUPABASE_SECRET_KEY` | Supabase secret key, server only. In Vercel set it as type Secret; never prefix it with `NEXT_PUBLIC_` |
 
 Keep `.env.local` out of git. The Supabase secret (service-role) key never goes in this repo; set it only in Vercel's environment variables when a feature needs it.
 
 ## Layout
 
 - `src/proxy.ts`: refreshes the session on every request and sends signed-out visitors to `/login`
-- `src/lib/supabase/server.ts`: Supabase client for server code
+- `src/lib/supabase/server.ts`: Supabase client for server code, acting as the signed-in person
+- `src/lib/supabase/admin.ts`: Supabase client with the secret key; skips row-level security, so it's used only for accepting invites and blocking sign-in
+- `src/lib/members.ts`: `requireMember()` and `requireAdmin()` for pages and actions
+- `src/app/members/`: member directory, invites and admin tools
+- `src/app/invite/[token]/`: where an invite link lands; creates the account and signs the person in
+- `src/app/no-access/`: shown to someone signed in without an active membership
 - `src/app/login/`: sign-in page and the server action that emails the link
 - `src/app/auth/callback/`: where the emailed link lands
 - `src/app/auth/signout/`: sign-out endpoint

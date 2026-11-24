@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Sign in" };
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-[#1e3a2b] px-4 text-[#f1f3ea]">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-forest px-4 text-on-forest">
       <h1 className="text-4xl font-black uppercase tracking-widest">Wolfpack</h1>
       <p>Members only.</p>
       <Suspense>
