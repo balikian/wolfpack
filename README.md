@@ -35,7 +35,7 @@ Set these in the Supabase dashboard:
 SQL lives in `supabase/`:
 
 - `migrations/`: schema changes, applied in filename order. Paste each new one into the Supabase SQL editor and run it once.
-- `tests/access_core_test.sql`: checks the access rules (who can see and change what). Safe to run on the live project at any time: it works inside one transaction and rolls everything back. "Success. No rows returned" means every check passed; a failure stops with a message starting `FAIL:`.
+- `tests/access_core_test.sql`: checks the access rules (who can see and change what). Safe to run on the live project at any time: it works inside one transaction and rolls everything back. A single row saying "All access tests passed" means every check passed; a failure stops with a message starting `FAIL:`.
 - `bootstrap_admin.sql`: run once to make yourself the first admin. Fill in your name and email in the editor; don't commit them.
 
 How access works: a sign-in account alone grants nothing. A person needs an active row in `members`. Shared content is visible to Everyone (`circle_id` is null) or to one circle, checked by `public.can_see(circle_id)`. Secret circles are invisible to non-members, and admins can manage a secret circle's membership without seeing its content.

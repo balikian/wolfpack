@@ -4,7 +4,7 @@
 -- test people and circles inside one transaction, checks what each person can
 -- and can't do, then rolls everything back, so nothing is left behind.
 --
---   * Every check passed: the editor says "Success. No rows returned".
+--   * Every check passed: the editor shows one row, "All access tests passed".
 --   * A check failed: it stops with an error that starts with "FAIL:".
 --
 -- Test people:
@@ -306,5 +306,8 @@ begin
   assert not public.can_see(null),
     'FAIL: C still passes the Everyone rule after being deactivated';
 end $$;
+
+-- Only reached if every check above passed. The SQL editor shows this row.
+select 'All access tests passed' as result;
 
 rollback;
