@@ -87,13 +87,32 @@ export function parseEventForm(
     return { ok: false, error: "Choose who it's for." };
   }
 
-  const starts_at = localInputToIso(String(formData.get("starts_at") ?? ""));
-  if (!starts_at) return { ok: false, error: "Enter when it starts." };
+  // The form has separate date and time boxes, in site time.
+  const field = (name: string) => String(formData.get(name) ?? "").trim();
+  // Time boxes send HH:mm (some browsers add :ss, which is dropped).
+  const at = (date: string, time: string) => localInputToIso(`${date}T${time.slice(0, 5)}`);
 
-  const endRaw = String(formData.get("ends_at") ?? "").trim();
-  const ends_at = endRaw ? localInputToIso(endRaw) : null;
-  if (endRaw && !ends_at) return { ok: false, error: "The end time isn't a valid date and time." };
-  if (ends_at && ends_at <= starts_at) return { ok: false, error: "It has to end after it starts." };
+  const startDate = field("starts_date");
+  const startTime = field("starts_time");
+  if (!startDate) return { ok: false, error: "Choose the date." };
+  if (!startTime) return { ok: false, error: "Enter when it starts." };
+  const starts_at = at(startDate, startTime);
+  if (!starts_at) return { ok: false, error: "The start date or time isn't valid." };
+
+  // An end is optional. Without its own date it ends the same day.
+  const endDate = field("ends_date");
+  const endTime = field("ends_time");
+  if (endDate && !endTime) return { ok: false, error: "Add an end time, or clear the end date." };
+  const ends_at = endTime ? at(endDate || startDate, endTime) : null;
+  if (endTime && !ends_at) return { ok: false, error: "The end date or time isn't valid." };
+  if (ends_at && ends_at <= starts_at) {
+    return {
+      ok: false,
+      error: endDate
+        ? "It has to end after it starts."
+        : "It has to end after it starts. For an overnight trip, add the end date.",
+    };
+  }
 
   const location_name = text(formData, "location_name", 200);
   const meetup_name = text(formData, "meetup_name", 200);
@@ -105,9 +124,10 @@ export function parseEventForm(
   const meetup = pin(formData, "meetup_lat", "meetup_lng");
   if (!where || !meetup) return { ok: false, error: "A map pin isn't valid. Clear it and drop it again." };
 
-  const meetupRaw = String(formData.get("meetup_at") ?? "").trim();
-  const meetup_at = meetupRaw ? localInputToIso(meetupRaw) : null;
-  if (meetupRaw && !meetup_at) return { ok: false, error: "The meetup time isn't a valid date and time." };
+  // The meetup is on the start date.
+  const meetupTime = field("meetup_time");
+  const meetup_at = meetupTime ? at(startDate, meetupTime) : null;
+  if (meetupTime && !meetup_at) return { ok: false, error: "The meetup time isn't valid." };
 
   // Only hikes have a trail link; the field isn't shown for other kinds.
   const trail_url = kind === "hike" ? normalizeTrailUrl(String(formData.get("trail_url") ?? "")) : null;

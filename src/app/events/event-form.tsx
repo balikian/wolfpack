@@ -10,13 +10,16 @@ export type EventFormValues = {
   title: string;
   description: string;
   audience: string; // "everyone" or a circle id
-  starts_at: string; // datetime-local value, site time
-  ends_at: string;
+  // Dates are YYYY-MM-DD and times HH:mm, in site time.
+  starts_date: string;
+  starts_time: string;
+  ends_date: string; // blank when it ends the same day
+  ends_time: string;
   location_name: string;
   lat: number | null;
   lng: number | null;
   meetup_name: string;
-  meetup_at: string;
+  meetup_time: string; // the meetup is on the event's start date
   meetup_lat: number | null;
   meetup_lng: number | null;
   trail_url: string;
@@ -53,7 +56,11 @@ export function EventForm({
   // For a hike, offer trailheads from earlier hikes; otherwise any place.
   const savedPlaces = isHike ? history.places.filter((p) => p.kind === "hike") : history.places;
   const [showMeetup, setShowMeetup] = useState(
-    Boolean(initial.meetup_name || initial.meetup_at || initial.meetup_lat !== null),
+    Boolean(initial.meetup_name || initial.meetup_time || initial.meetup_lat !== null),
+  );
+  // The meetup search looks near the trailhead first.
+  const [placePin, setPlacePin] = useState(
+    initial.lat !== null && initial.lng !== null ? { lat: initial.lat, lng: initial.lng } : null,
   );
 
   return (
@@ -127,24 +134,35 @@ export function EventForm({
       <section className="flex flex-col gap-3">
         <h2 className={heading}>When ({timeZoneLabel})</h2>
         <div className="flex flex-wrap gap-2">
-          <label className={`${labelCls} min-w-52 flex-1`}>
-            Starts
+          <label className={`${labelCls} min-w-40 flex-[2]`}>
+            Date
             <input
-              type="datetime-local"
-              name="starts_at"
+              type="date"
+              name="starts_date"
               required
-              defaultValue={initial.starts_at}
+              defaultValue={initial.starts_date}
               className={input}
             />
           </label>
-          <label className={`${labelCls} min-w-52 flex-1`}>
-            Ends (optional)
+          <label className={`${labelCls} min-w-32 flex-1`}>
+            Starts at
             <input
-              type="datetime-local"
-              name="ends_at"
-              defaultValue={initial.ends_at}
+              type="time"
+              name="starts_time"
+              required
+              defaultValue={initial.starts_time}
               className={input}
             />
+          </label>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <label className={`${labelCls} min-w-32 flex-1`}>
+            Ends at (optional)
+            <input type="time" name="ends_time" defaultValue={initial.ends_time} className={input} />
+          </label>
+          <label className={`${labelCls} min-w-40 flex-[2]`}>
+            End date, if a later day
+            <input type="date" name="ends_date" defaultValue={initial.ends_date} className={input} />
           </label>
         </div>
       </section>
@@ -163,6 +181,7 @@ export function EventForm({
           saved={savedPlaces}
           savedHeading={isHike ? "Trailheads we've used" : "Places we've used"}
           onNameChange={setPlaceName}
+          onPinChange={setPlacePin}
           onPickSaved={(p) => {
             if (isHike && p.trail_url && !trailUrl.trim()) setTrailUrl(p.trail_url);
           }}
@@ -205,12 +224,12 @@ export function EventForm({
             <p className="text-sm text-muted">
               Somewhere to gather first, like a park-and-ride for carpooling.
             </p>
-            <label className={labelCls}>
-              Meet at
+            <label className={`${labelCls} max-w-48`}>
+              Meet at (same day)
               <input
-                type="datetime-local"
-                name="meetup_at"
-                defaultValue={initial.meetup_at}
+                type="time"
+                name="meetup_time"
+                defaultValue={initial.meetup_time}
                 className={input}
               />
             </label>
@@ -229,6 +248,7 @@ export function EventForm({
                   : null
               }
               saved={history.meetups}
+              near={placePin}
               savedHeading="Meetup spots we've used"
             />
           </>

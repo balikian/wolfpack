@@ -40,6 +40,8 @@ export function PlaceField({
   color = "blaze",
   onNameChange,
   onPickSaved,
+  onPinChange,
+  near,
 }: {
   nameField: string;
   latName: string;
@@ -54,11 +56,18 @@ export function PlaceField({
   color?: PinColor;
   onNameChange?: (name: string) => void;
   onPickSaved?: (place: SavedPlace) => void;
+  onPinChange?: (pin: Pin) => void;
+  /** Search near here first, e.g. the trailhead when looking for a meetup spot. */
+  near?: Pin;
 }) {
   const id = useId();
   const listId = `${id}-list`;
   const [name, setName] = useState(initialName);
-  const [pin, setPin] = useState<Pin>(initialPin);
+  const [pin, setPinState] = useState<Pin>(initialPin);
+  const setPin = (next: Pin) => {
+    setPinState(next);
+    onPinChange?.(next);
+  };
   const [open, setOpen] = useState(false);
   const [found, setFound] = useState<FoundPlace[]>([]);
   const [status, setStatus] = useState<"idle" | "searching" | "done" | "error">("idle");
@@ -97,7 +106,7 @@ export function PlaceField({
     timer.current = setTimeout(() => {
       const controller = new AbortController();
       inflight.current = controller;
-      searchPlaces(next.trim(), controller.signal)
+      searchPlaces(next.trim(), controller.signal, near)
         .then((results) => {
           setFound(results);
           setStatus("done");
