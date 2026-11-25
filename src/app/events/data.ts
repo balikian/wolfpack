@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Circle } from "@/lib/circles";
+import type { SavedPlace } from "@/components/place-field";
 import {
   EVENT_COLUMNS,
   eventEndMs,
@@ -74,6 +75,48 @@ async function toCards(events: EventRow[], meId: string): Promise<EventCard[]> {
       myStatus: forEvent.find((r) => r.member_id === meId)?.status ?? null,
     };
   });
+}
+
+export type PlaceHistory = { places: SavedPlace[]; meetups: SavedPlace[] };
+
+/**
+ * Places and meetup spots from events this person can see, most recently
+ * used first and one per name, for the event form's suggestions. A secret
+ * circle's places stay with that circle, since RLS hides its events.
+ */
+export async function loadPlaceHistory(): Promise<PlaceHistory> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("events")
+    .select("kind, location_name, lat, lng, trail_url, meetup_name, meetup_lat, meetup_lng")
+    .order("starts_at", { ascending: false })
+    .limit(300)
+    .returns<
+      Pick<
+        EventRow,
+        "kind" | "location_name" | "lat" | "lng" | "trail_url" | "meetup_name" | "meetup_lat" | "meetup_lng"
+      >[]
+    >();
+
+  const places = new Map<string, SavedPlace>();
+  const meetups = new Map<string, SavedPlace>();
+  for (const e of data ?? []) {
+    const placeKey = e.location_name?.trim().toLowerCase();
+    if (placeKey && e.lat !== null && e.lng !== null && !places.has(placeKey)) {
+      places.set(placeKey, {
+        name: e.location_name!.trim(),
+        lat: e.lat,
+        lng: e.lng,
+        kind: e.kind,
+        trail_url: e.trail_url,
+      });
+    }
+    const meetupKey = e.meetup_name?.trim().toLowerCase();
+    if (meetupKey && e.meetup_lat !== null && e.meetup_lng !== null && !meetups.has(meetupKey)) {
+      meetups.set(meetupKey, { name: e.meetup_name!.trim(), lat: e.meetup_lat, lng: e.meetup_lng });
+    }
+  }
+  return { places: [...places.values()], meetups: [...meetups.values()] };
 }
 
 /** Circles this person is in, for the "Who it's for" menu. */

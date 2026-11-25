@@ -5,7 +5,7 @@ import { requireMember } from "@/lib/members";
 import { SITE_TIME_ZONE_LABEL } from "@/lib/time";
 import { EventForm } from "../event-form";
 import { createEvent } from "../actions";
-import { myCircles } from "../data";
+import { loadPlaceHistory, myCircles } from "../data";
 import { audienceOptions, blankEvent, kindOptions } from "../form-options";
 
 export const metadata: Metadata = { title: "New event" };
@@ -28,7 +28,7 @@ export default function NewEventPage() {
 
 async function NewEventForm() {
   const me = await requireMember();
-  const circles = await myCircles(me.id);
+  const [circles, history] = await Promise.all([myCircles(me.id), loadPlaceHistory()]);
   return (
     <EventForm
       action={createEvent}
@@ -37,6 +37,7 @@ async function NewEventForm() {
       audiences={audienceOptions(circles)}
       timeZoneLabel={SITE_TIME_ZONE_LABEL}
       submitLabel="Create event"
+      history={history}
     />
   );
 }

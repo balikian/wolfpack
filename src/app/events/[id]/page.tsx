@@ -14,6 +14,7 @@ import {
   type EventRow,
   type Rsvp,
 } from "@/lib/events";
+import { isWtaUrl } from "@/lib/trails";
 import { formatDay, formatTime, formatWhen, SITE_TIME_ZONE_LABEL } from "@/lib/time";
 import { ActionButton } from "@/components/action-button";
 import { MapView, type MapPoint } from "@/components/map-view";
@@ -111,6 +112,7 @@ async function EventContent({ params }: { params: Promise<{ id: string }> }) {
   }
   const hasMeetup = Boolean(event.meetup_name || event.meetup_at || event.meetup_lat !== null);
   const hasPlace = Boolean(event.location_name || event.lat !== null);
+  const isHike = event.kind === "hike";
 
   return (
     <>
@@ -139,21 +141,31 @@ async function EventContent({ params }: { params: Promise<{ id: string }> }) {
         </section>
       )}
 
-      {(hasPlace || hasMeetup) && (
+      {(hasPlace || hasMeetup || event.trail_url) && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-bold uppercase tracking-wider text-muted">Where</h2>
-          {hasPlace && (
+          {(hasPlace || event.trail_url) && (
             <Place
               dot="blaze"
-              name={event.location_name ?? "Event location"}
+              caption={isHike ? "Trailhead" : null}
+              name={event.location_name ?? (isHike ? "Trailhead" : "Event location")}
               lat={event.lat}
               lng={event.lng}
+              link={
+                event.trail_url
+                  ? {
+                      href: event.trail_url,
+                      label: isWtaUrl(event.trail_url) ? "WTA hike page" : "Trail info",
+                    }
+                  : null
+              }
             />
           )}
           {hasMeetup && (
             <Place
               dot="forest"
-              name={`Meet at ${event.meetup_name ?? "the meetup spot"}`}
+              caption="Meetup"
+              name={event.meetup_name ?? "Meetup spot"}
               lat={event.meetup_lat}
               lng={event.meetup_lng}
               when={
@@ -203,12 +215,16 @@ function Place({
   lat,
   lng,
   when,
+  caption,
+  link,
 }: {
   dot: "blaze" | "forest";
   name: string;
   lat: number | null;
   lng: number | null;
   when?: string | null;
+  caption?: string | null;
+  link?: { href: string; label: string } | null;
 }) {
   return (
     <div className="flex items-start gap-3">
@@ -217,18 +233,33 @@ function Place({
         aria-hidden
       />
       <div className="flex min-w-0 flex-1 flex-col">
+        {caption && (
+          <span className="text-xs font-bold uppercase tracking-wider text-muted">{caption}</span>
+        )}
         <span className="font-semibold">{name}</span>
         {when && <span className="text-sm">{when}</span>}
-        {lat !== null && lng !== null && (
-          <a
-            href={directionsUrl(lat, lng)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-semibold underline"
-          >
-            Directions
-          </a>
-        )}
+        <span className="flex flex-wrap gap-x-4">
+          {lat !== null && lng !== null && (
+            <a
+              href={directionsUrl(lat, lng)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold underline"
+            >
+              Directions
+            </a>
+          )}
+          {link && (
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold underline"
+            >
+              {link.label} ↗
+            </a>
+          )}
+        </span>
       </div>
     </div>
   );

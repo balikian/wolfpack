@@ -33,6 +33,7 @@ export const blankEvent: EventFormValues = {
   meetup_at: "",
   meetup_lat: null,
   meetup_lng: null,
+  trail_url: "",
 };
 
 export function formValuesFrom(e: EventRow): EventFormValues {
@@ -50,5 +51,6 @@ export function formValuesFrom(e: EventRow): EventFormValues {
     meetup_at: isoToLocalInput(e.meetup_at),
     meetup_lat: e.meetup_lat,
     meetup_lng: e.meetup_lng,
+    trail_url: e.trail_url ?? "",
   };
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { startTransition, useActionState, useState } from "react";
-import { MapPicker } from "@/components/map-picker";
+import { PlaceField, type SavedPlace } from "@/components/place-field";
+import { wtaSearchUrl } from "@/lib/trails";
 import type { FormResult } from "./actions";
 
 export type EventFormValues = {
@@ -18,6 +19,7 @@ export type EventFormValues = {
   meetup_at: string;
   meetup_lat: number | null;
   meetup_lng: number | null;
+  trail_url: string;
 };
 
 type Option = { value: string; label: string };
@@ -33,6 +35,7 @@ export function EventForm({
   audiences,
   timeZoneLabel,
   submitLabel,
+  history,
 }: {
   action: (prev: FormResult, formData: FormData) => Promise<FormResult>;
   initial: EventFormValues;
@@ -40,8 +43,15 @@ export function EventForm({
   audiences: Option[];
   timeZoneLabel: string;
   submitLabel: string;
+  history: { places: SavedPlace[]; meetups: SavedPlace[] };
 }) {
   const [state, formAction, pending] = useActionState(action, { error: null });
+  const [kind, setKind] = useState(initial.kind);
+  const [placeName, setPlaceName] = useState(initial.location_name);
+  const [trailUrl, setTrailUrl] = useState(initial.trail_url);
+  const isHike = kind === "hike";
+  // For a hike, offer trailheads from earlier hikes; otherwise any place.
+  const savedPlaces = isHike ? history.places.filter((p) => p.kind === "hike") : history.places;
   const [showMeetup, setShowMeetup] = useState(
     Boolean(initial.meetup_name || initial.meetup_at || initial.meetup_lat !== null),
   );
@@ -61,7 +71,12 @@ export function EventForm({
         <div className="flex gap-2">
           <label className={`${labelCls} w-36`}>
             Kind
-            <select name="kind" defaultValue={initial.kind} className={input}>
+            <select
+              name="kind"
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+              className={input}
+            >
               {kinds.map((k) => (
                 <option key={k.value} value={k.value}>
                   {k.label}
@@ -135,23 +150,52 @@ export function EventForm({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className={heading}>Where</h2>
-        <label className={labelCls}>
-          Place name
-          <input
-            name="location_name"
-            maxLength={200}
-            defaultValue={initial.location_name}
-            placeholder="Trailhead, park, someone's backyard…"
-            className={input}
-          />
-        </label>
-        <MapPicker
+        <h2 className={heading}>{isHike ? "Trailhead" : "Where"}</h2>
+        <PlaceField
+          nameField="location_name"
           latName="lat"
           lngName="lng"
-          initial={initial.lat !== null && initial.lng !== null ? { lat: initial.lat, lng: initial.lng } : null}
-          label="Map for the event location. Tap to drop a pin."
+          label={isHike ? "Trailhead name" : "Place name"}
+          placeholder={isHike ? "Search, e.g. Mailbox Peak Trailhead" : "Search for a place, or type a name"}
+          mapLabel={`Map for the ${isHike ? "trailhead" : "event location"}. Tap to drop a pin.`}
+          initialName={initial.location_name}
+          initialPin={initial.lat !== null && initial.lng !== null ? { lat: initial.lat, lng: initial.lng } : null}
+          saved={savedPlaces}
+          savedHeading={isHike ? "Trailheads we've used" : "Places we've used"}
+          onNameChange={setPlaceName}
+          onPickSaved={(p) => {
+            if (isHike && p.trail_url && !trailUrl.trim()) setTrailUrl(p.trail_url);
+          }}
         />
+        {isHike && (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="trail_url" className="text-sm font-semibold">
+              WTA hike page (optional)
+            </label>
+            <input
+              id="trail_url"
+              name="trail_url"
+              inputMode="url"
+              autoComplete="off"
+              maxLength={500}
+              value={trailUrl}
+              onChange={(e) => setTrailUrl(e.target.value)}
+              placeholder="https://www.wta.org/go-hiking/hikes/…"
+              className={input}
+            />
+            <p className="text-sm text-muted">
+              <a
+                href={wtaSearchUrl(placeName)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold underline"
+              >
+                Find it on WTA ↗
+              </a>{" "}
+              then copy the hike&apos;s address from your browser and paste it here.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="flex flex-col gap-3">
@@ -161,37 +205,31 @@ export function EventForm({
             <p className="text-sm text-muted">
               Somewhere to gather first, like a park-and-ride for carpooling.
             </p>
-            <div className="flex flex-wrap gap-2">
-              <label className={`${labelCls} min-w-52 flex-1`}>
-                Place name
-                <input
-                  name="meetup_name"
-                  maxLength={200}
-                  defaultValue={initial.meetup_name}
-                  placeholder="Park-and-ride on Main St"
-                  className={input}
-                />
-              </label>
-              <label className={`${labelCls} min-w-52 flex-1`}>
-                Meet at
-                <input
-                  type="datetime-local"
-                  name="meetup_at"
-                  defaultValue={initial.meetup_at}
-                  className={input}
-                />
-              </label>
-            </div>
-            <MapPicker
+            <label className={labelCls}>
+              Meet at
+              <input
+                type="datetime-local"
+                name="meetup_at"
+                defaultValue={initial.meetup_at}
+                className={input}
+              />
+            </label>
+            <PlaceField
+              nameField="meetup_name"
               latName="meetup_lat"
               lngName="meetup_lng"
               color="forest"
-              initial={
+              label="Meetup place"
+              placeholder="Search, e.g. Issaquah Highlands Park & Ride"
+              mapLabel="Map for the meetup spot. Tap to drop a pin."
+              initialName={initial.meetup_name}
+              initialPin={
                 initial.meetup_lat !== null && initial.meetup_lng !== null
                   ? { lat: initial.meetup_lat, lng: initial.meetup_lng }
                   : null
               }
-              label="Map for the meetup spot. Tap to drop a pin."
+              saved={history.meetups}
+              savedHeading="Meetup spots we've used"
             />
           </>
         ) : (

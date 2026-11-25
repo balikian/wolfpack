@@ -1,6 +1,7 @@
 import "server-only";
 import { isUuid } from "@/lib/circles";
 import { localInputToIso } from "@/lib/time";
+import { normalizeTrailUrl } from "@/lib/trails";
 
 export const EVENT_KINDS = {
   hike: { label: "Hike", emoji: "🥾" },
@@ -28,10 +29,11 @@ export type EventRow = {
   meetup_lat: number | null;
   meetup_lng: number | null;
   meetup_at: string | null;
+  trail_url: string | null;
 };
 
 export const EVENT_COLUMNS =
-  "id, circle_id, created_by, kind, title, description, starts_at, ends_at, location_name, lat, lng, meetup_name, meetup_lat, meetup_lng, meetup_at";
+  "id, circle_id, created_by, kind, title, description, starts_at, ends_at, location_name, lat, lng, meetup_name, meetup_lat, meetup_lng, meetup_at, trail_url";
 
 export type Rsvp = { event_id: string; member_id: string; status: RsvpStatus };
 
@@ -107,6 +109,12 @@ export function parseEventForm(
   const meetup_at = meetupRaw ? localInputToIso(meetupRaw) : null;
   if (meetupRaw && !meetup_at) return { ok: false, error: "The meetup time isn't a valid date and time." };
 
+  // Only hikes have a trail link; the field isn't shown for other kinds.
+  const trail_url = kind === "hike" ? normalizeTrailUrl(String(formData.get("trail_url") ?? "")) : null;
+  if (trail_url === false) {
+    return { ok: false, error: "The trail link should be a web address, like https://www.wta.org/go-hiking/hikes/…" };
+  }
+
   return {
     ok: true,
     fields: {
@@ -123,6 +131,7 @@ export function parseEventForm(
       meetup_lat: meetup.lat,
       meetup_lng: meetup.lng,
       meetup_at,
+      trail_url,
     },
   };
 }

@@ -9,7 +9,7 @@ import { EVENT_COLUMNS, type EventRow } from "@/lib/events";
 import { SITE_TIME_ZONE_LABEL } from "@/lib/time";
 import { EventForm } from "../../event-form";
 import { updateEvent } from "../../actions";
-import { myCircles } from "../../data";
+import { loadPlaceHistory, myCircles } from "../../data";
 import { audienceOptions, formValuesFrom, kindOptions } from "../../form-options";
 
 export const metadata: Metadata = { title: "Edit event" };
@@ -39,7 +39,7 @@ async function EditContent({ params }: { params: Promise<{ id: string }> }) {
   if (!event) notFound();
   if (event.created_by !== me.id && me.role !== "admin") notFound();
 
-  const circles = await myCircles(me.id);
+  const [circles, history] = await Promise.all([myCircles(me.id), loadPlaceHistory()]);
   // Anyone who can see a circle's event is in that circle, so the event's
   // own circle is always in this menu.
   return (
@@ -56,6 +56,7 @@ async function EditContent({ params }: { params: Promise<{ id: string }> }) {
         audiences={audienceOptions(circles)}
         timeZoneLabel={SITE_TIME_ZONE_LABEL}
         submitLabel="Save changes"
+        history={history}
       />
     </>
   );
