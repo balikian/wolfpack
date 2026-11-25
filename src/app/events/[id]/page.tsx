@@ -19,6 +19,8 @@ import { formatDay, formatTime, formatWhen, SITE_TIME_ZONE_LABEL } from "@/lib/t
 import { ActionButton } from "@/components/action-button";
 import { MapView, type MapPoint } from "@/components/map-view";
 import { RsvpButtons } from "./rsvp-buttons";
+import { ChatRoom } from "@/components/chat/chat-room";
+import { loadChat, nameMap } from "@/lib/chat";
 import { deleteEvent } from "../actions";
 
 export const metadata: Metadata = { title: "Event" };
@@ -57,7 +59,7 @@ async function EventContent({ params }: { params: Promise<{ id: string }> }) {
     .maybeSingle<EventRow>();
   if (!event) notFound();
 
-  const [{ data: rsvps }, { data: members }, { data: circle }] = await Promise.all([
+  const [{ data: rsvps }, { data: members }, { data: circle }, chat] = await Promise.all([
     supabase
       .from("event_rsvps")
       .select("event_id, member_id, status")
@@ -71,6 +73,7 @@ async function EventContent({ params }: { params: Promise<{ id: string }> }) {
           .eq("id", event.circle_id)
           .maybeSingle<Circle>()
       : Promise.resolve({ data: null }),
+    loadChat({ room: "event", eventId: id }),
   ]);
 
   const nameOf = new Map((members ?? []).map((m) => [m.id, m.display_name]));
@@ -186,6 +189,25 @@ async function EventContent({ params }: { params: Promise<{ id: string }> }) {
         <PeopleLine label="Going" names={going} />
         {maybe.length > 0 && <PeopleLine label="Maybe" names={maybe} />}
         {cant.length > 0 && <PeopleLine label="Can't go" names={cant} />}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted">Chat</h2>
+        <ChatRoom
+          target={{ room: "event", eventId: event.id }}
+          initial={chat.messages}
+          more={chat.more}
+          names={nameMap(members ?? [])}
+          meId={me.id}
+          isAdmin={me.role === "admin"}
+          nowIso={now.toISOString()}
+          emptyText={isHike ? "No messages yet. Ask about carpools or gear." : "No messages yet."}
+        />
+        <p className="text-xs text-muted">
+          {circle
+            ? `Only people in ${circle.name} can see this chat.`
+            : "Everyone in the pack can see this chat."}
+        </p>
       </section>
 
       {canEdit && (

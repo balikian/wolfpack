@@ -39,7 +39,7 @@ Set these in the Supabase dashboard:
 SQL lives in `supabase/`:
 
 - `migrations/`: schema changes, applied in filename order. Paste each new one into the Supabase SQL editor and run it once.
-- `tests/`: checks the access rules (who can see and change what), one file per migration: `access_core_test.sql`, `events_test.sql`, `circle_managers_test.sql` and `event_trail_links_test.sql`. They check the rules as of the latest migration, so run them after all migrations. Safe to run on the live project at any time: each works inside one transaction and rolls everything back. A single row saying "All … tests passed" means every check passed; a failure stops with a message starting `FAIL:`.
+- `tests/`: checks the access rules (who can see and change what), one file per migration: `access_core_test.sql`, `events_test.sql`, `circle_managers_test.sql`, `event_trail_links_test.sql` and `chat_test.sql`. They check the rules as of the latest migration, so run them after all migrations. Safe to run on the live project at any time: each works inside one transaction and rolls everything back. A single row saying "All … tests passed" means every check passed; a failure stops with a message starting `FAIL:`.
 - `bootstrap_admin.sql`: run once to make yourself the first admin. Fill in your name and email in the editor; don't commit them.
 
 How access works: a sign-in account alone grants nothing. A person needs an active row in `members`. Shared content is visible to Everyone (`circle_id` is null) or to one circle, checked by `public.can_see(circle_id)`. Secret circles are invisible to non-members, and admins can manage a secret circle's membership without seeing its content.
@@ -71,6 +71,7 @@ Keep `.env.local` out of git. The Supabase secret (service-role) key never goes 
 - `src/app/events/`: events and hikes: list, new, edit, event page with RSVPs and map
 - `src/components/map-picker.tsx`, `map-view.tsx`: Leaflet maps with OpenStreetMap tiles (tap to drop a pin; read-only view)
 - `src/components/place-field.tsx`, `place-search.ts`: place name with search-as-you-type (places used before, then Photon results) that drops the map pin
+- `src/app/chat/`, `src/components/chat/chat-room.tsx`, `src/lib/chat.ts`: chat rooms (Everyone at /chat, plus one on each event and circle page), live through Supabase Realtime
 - `src/lib/trails.ts`: WTA search links and trail link checks (WTA has no public API)
 - `src/lib/time.ts`: event times are entered and shown in Pacific time, whatever the server's clock
 - `src/app/invite/[token]/`: where an invite link lands; creates the account and signs the person in

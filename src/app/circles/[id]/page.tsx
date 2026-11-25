@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import { requireMember, type Member } from "@/lib/members";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +9,8 @@ import { isUuid, type Circle, type CircleMembership } from "@/lib/circles";
 import { ActionButton } from "@/components/action-button";
 import { CircleForm } from "../circle-form";
 import { AddMemberForm } from "./add-member-form";
+import { ChatRoom } from "@/components/chat/chat-room";
+import { loadChat, nameMap } from "@/lib/chat";
 import {
   addCircleMember,
   deleteCircle,
@@ -38,6 +41,7 @@ async function CircleContent({ params }: { params: Promise<{ id: string }> }) {
   const me = await requireMember();
   const { id } = await params;
   if (!isUuid(id)) notFound();
+  await connection();
 
   const supabase = await createClient();
   // A secret circle this person isn't in comes back empty, the same as one
@@ -49,7 +53,7 @@ async function CircleContent({ params }: { params: Promise<{ id: string }> }) {
     .maybeSingle<Circle>();
   if (!circle) notFound();
 
-  const [{ data: memberships }, { data: members }] = await Promise.all([
+  const [{ data: memberships }, { data: members }, chat] = await Promise.all([
     supabase
       .from("circle_members")
       .select("circle_id, member_id, is_manager")
@@ -60,6 +64,8 @@ async function CircleContent({ params }: { params: Promise<{ id: string }> }) {
       .select("id, display_name, role, status")
       .order("display_name")
       .returns<Member[]>(),
+    // Empty unless this person is in the circle (row-level security).
+    loadChat({ room: "circle", circleId: id }),
   ]);
 
   const everyone = members ?? [];
@@ -169,6 +175,23 @@ async function CircleContent({ params }: { params: Promise<{ id: string }> }) {
           Once a circle has a manager, it always keeps at least one.
         </p>
       </section>
+
+      {myRow && (
+        <section className="flex flex-col gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted">Chat</h2>
+          <ChatRoom
+            target={{ room: "circle", circleId: circle.id }}
+            initial={chat.messages}
+            more={chat.more}
+            names={nameMap(everyone)}
+            meId={me.id}
+            isAdmin={isAdmin}
+            nowIso={new Date().toISOString()}
+            emptyText="No messages yet."
+          />
+          <p className="text-xs text-muted">Only people in {circle.name} can see this chat.</p>
+        </section>
+      )}
 
       {canAddRemove && (
         <section className="flex flex-col gap-2">

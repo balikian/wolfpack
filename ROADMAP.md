@@ -42,7 +42,7 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 - [x] Events and hikes with RSVPs, map pin and optional meetup spot and time (any member can create one, for Everyone or a circle they're in)
 - [x] Place search on the map, trailheads and meetup spots used before as shortcuts, and a WTA link for hikes
 - [ ] Spots: shared with a circle by default, exact coordinates sent only to people who can see them
-- [ ] Chat: Everyone room, one room per circle, one per event (Supabase Realtime)
+- [x] Chat: Everyone room, one room per circle, one per event (Supabase Realtime); authors and admins can delete messages
 
 ## Step 4: Media and polish
 
@@ -53,6 +53,7 @@ Plan for Wolfpack, taken from the requirements spec (v1 draft). Work happens in 
 - [ ] Attendance check-in (open until 48 hours after an event ends)
 - [ ] Points and leaderboard, with circle events hidden from people outside the circle
 - [ ] Trip reports
+- [ ] Chat extras: unread markers, loading older messages, photos in chat
 
 ## Later (not in v1)
 

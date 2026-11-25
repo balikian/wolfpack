@@ -48,6 +48,9 @@ async function Welcome() {
         <Link href="/events" className={navButton}>
           Events
         </Link>
+        <Link href="/chat" className={navButton}>
+          Chat
+        </Link>
         <Link href="/circles" className={navButton}>
           Circles
         </Link>
